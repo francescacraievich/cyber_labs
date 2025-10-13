@@ -1,6 +1,5 @@
 """
 EPSS Tracker Dashboard
-Professional CVE monitoring with evolution tracking
 """
 
 import streamlit as st
@@ -49,7 +48,7 @@ def load_full_dataset():
 
 submission_df = load_submission()
 full_dataset = load_full_dataset()
-selected_cves = submission_df['cve.id'].tolist()
+selected_cves = submission_df['cve.id'].to_list()
 
 # Create lookup for initial data from September dataset
 initial_data = {}
