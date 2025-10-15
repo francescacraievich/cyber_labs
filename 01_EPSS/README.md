@@ -1,4 +1,4 @@
-[![Streamlit App](https://img.shields.io/badge/Streamlit-Live%20App-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://your-app.streamlit.app)
+[![Open in Streamlit](https://img.shields.io/badge/Open%20in-Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://cyberlabs-epss.streamlit.app/)
 
 # CVE Prioritization Using the Albanese et al. (2023) Vulnerability Metrics Framework
 
