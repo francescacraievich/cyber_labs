@@ -1,38 +1,4 @@
-
-# CVE Prioritization Using the Albanese et al. (2023) Vulnerability Metrics Framework
-
-<div align="center">
-
-![Security Research](https://img.shields.io/badge/Security-Vulnerability%20Analysis-red?style=for-the-badge)
-![Python](https://img.shields.io/badge/Python-3.8+-blue?style=for-the-badge&logo=python&logoColor=white)
-![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)
-![Status](https://img.shields.io/badge/Status-Active-brightgreen?style=for-the-badge)
-
-</div>
-
-<div align="center">
-
-**Framework & Data Sources**
-
-![CVSS](https://img.shields.io/badge/Framework-CVSS-informational?logo=security)
-![EPSS](https://img.shields.io/badge/Scoring-EPSS-orange)
-![NVD](https://img.shields.io/badge/Data-NVD%20API-blue)
-![CVE](https://img.shields.io/badge/Focus-CVE%20Analysis-red)
-![Paper](https://img.shields.io/badge/Based%20on-Albanese%20et%20al.%202023-blueviolet)
-
-**Technologies**
-
-![Pandas](https://img.shields.io/badge/Pandas-Data%20Analysis-150458?logo=pandas)
-![NumPy](https://img.shields.io/badge/NumPy-Scientific-013243?logo=numpy)
-![Jupyter](https://img.shields.io/badge/Jupyter-Notebook-F37626?logo=jupyter)
-![Plotly](https://img.shields.io/badge/Plotly-Visualization-3F4F75?logo=plotly)
-
-</div>
-
----
-
-## Overview
-...resto del README...
+[![Streamlit App](https://img.shields.io/badge/Streamlit-Live%20App-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://your-app.streamlit.app)
 
 # CVE Prioritization Using the Albanese et al. (2023) Vulnerability Metrics Framework
 
