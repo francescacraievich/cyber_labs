@@ -7,6 +7,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import requests
 from datetime import datetime
+import os
 
 # Page config
 st.set_page_config(
@@ -35,13 +36,17 @@ st.title("EPSS Evolution Tracker")
 # Load submission and full dataset
 @st.cache_data
 def load_submission():
-    df = pd.read_csv('data/TheCybeerGirl.csv', index_col=0)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    csv_path = os.path.join(script_dir, 'data', 'TheCybeerGirl.csv')
+    df = pd.read_csv(csv_path, index_col=0)
     return df
 
 @st.cache_data
 def load_full_dataset():
     """Load full dataset with CVE publication dates and initial EPSS values"""
-    df = pd.read_csv('data/vuln_2025_09.csv', index_col=0)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    csv_path = os.path.join(script_dir, 'data', 'vuln_2025_09.csv')
+    df = pd.read_csv(csv_path, index_col=0)
     # Extract just the date from the timestamp
     df['cve.published_date'] = pd.to_datetime(df['cve.published']).dt.date.astype(str)
     return df
