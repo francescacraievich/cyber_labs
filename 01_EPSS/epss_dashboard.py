@@ -302,38 +302,6 @@ with col2:
     </div>
     """, unsafe_allow_html=True)
 
-# Detailed changes table
-st.markdown("---")
-st.subheader("Detailed CVE Changes")
-
-# Format table
-display_df = changes_df.copy()
-display_df['Initial EPSS'] = display_df['Initial EPSS'].apply(lambda x: f"{x:.5f}")
-display_df['Current EPSS'] = display_df['Current EPSS'].apply(lambda x: f"{x:.5f}")
-display_df['Delta'] = display_df['Delta'].apply(lambda x: f"{x:+.5f}")
-display_df['Change (%)'] = display_df['Change (%)'].apply(lambda x: f"{x:+.2f}%")
-display_df['Initial Percentile'] = display_df['Initial Percentile'].apply(lambda x: f"{x:.5f}")
-display_df['Current Percentile'] = display_df['Current Percentile'].apply(lambda x: f"{x:.5f}")
-
-# Style function
-def highlight_changes(row):
-    delta_val = float(row['Delta'])
-    if delta_val > 0:
-        color = 'background-color: rgba(76, 175, 80, 0.2)'
-    elif delta_val < 0:
-        color = 'background-color: rgba(244, 67, 54, 0.2)'
-    else:
-        color = ''
-    return [color] * len(row)
-
-styled_df = display_df.style.apply(highlight_changes, axis=1)
-
-st.dataframe(
-    styled_df,
-    use_container_width=True,
-    height=400
-)
-
 # Footer
 st.markdown("---")
 st.caption(f"Last update: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
