@@ -69,36 +69,64 @@ for cve_id in selected_cves:
 # Sidebar
 st.sidebar.header("Configuration")
 group_name = st.sidebar.text_input("Group name", "Francesca Craievich")
+metric_mode = st.sidebar.radio("Display metric", ["EPSS Score", "Percentile"], index=0)
 
-# Fetch historical EPSS data
+# Fetch historical EPSS data using monthly snapshots + recent time-series
 @st.cache_data(ttl=3600)
 def fetch_historical_epss(cve_list):
-    """Fetch historical time-series EPSS scores from FIRST API"""
+    """Fetch EPSS history by sampling monthly snapshots + last 30 days detail"""
     results = {}
 
+    # Generate sample dates: biweekly from Oct 2025 to ~30 days ago
+    from datetime import timedelta
+    sample_dates = []
+    d = datetime(2025, 10, 1)
+    now = datetime.now()
+    cutoff = now - timedelta(days=30)
+    while d < cutoff:
+        sample_dates.append(d.strftime('%Y-%m-%d'))
+        d = d + timedelta(days=14)
+
+    cve_str = ",".join(cve_list)
+
     try:
+        # 1. Fetch biweekly snapshots — batch all CVEs per date
+        for sample_date in sample_dates:
+            url = f"https://api.first.org/data/v1/epss?cve={cve_str}&date={sample_date}"
+            response = requests.get(url, timeout=15)
+            if response.status_code == 200:
+                for item in response.json().get('data', []):
+                    cve_id = item['cve']
+                    if cve_id not in results:
+                        results[cve_id] = []
+                    results[cve_id].append({
+                        'date': item['date'],
+                        'epss': float(item['epss']),
+                        'percentile': float(item['percentile'])
+                    })
+
+        # 2. Fetch last 30 days detail via time-series (per CVE)
         for cve_id in cve_list:
-            # Request time-series data for each CVE
             url = f"https://api.first.org/data/v1/epss?cve={cve_id}&scope=time-series"
             response = requests.get(url, timeout=15)
-
             if response.status_code == 200:
-                data = response.json()
-                time_series = data.get('data', [])
-
-                if time_series and len(time_series) > 0:
-                    # Get all historical data points
-                    history = []
-                    for item in time_series[0].get('time-series', []):
-                        history.append({
+                data = response.json().get('data', [])
+                if data and len(data) > 0:
+                    if cve_id not in results:
+                        results[cve_id] = []
+                    for item in data[0].get('time-series', []):
+                        results[cve_id].append({
                             'date': item['date'],
                             'epss': float(item['epss']),
                             'percentile': float(item['percentile'])
                         })
 
-                    # Sort by date
-                    history.sort(key=lambda x: x['date'])
-                    results[cve_id] = history
+        # Deduplicate by date and sort for each CVE
+        for cve_id in results:
+            seen = {}
+            for h in results[cve_id]:
+                seen[h['date']] = h
+            results[cve_id] = sorted(seen.values(), key=lambda x: x['date'])
 
     except Exception as e:
         st.sidebar.error(f"API Error: {str(e)}")
@@ -170,10 +198,13 @@ changes_df = pd.DataFrame(changes_data)
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    st.subheader("EPSS Evolution")
+    use_percentile = (metric_mode == "Percentile")
+    metric_key = 'percentile' if use_percentile else 'epss'
+    metric_label = "Percentile" if use_percentile else "EPSS Score"
+
+    st.subheader(f"{metric_label} Evolution")
     st.caption(f"Group: {group_name}")
 
-    # Create step plot with daily evolution (gradoni)
     fig = go.Figure()
 
     colors = [
@@ -184,94 +215,57 @@ with col1:
     for i, (idx, row) in enumerate(submission_df.iterrows()):
         cve_id = row['cve.id']
 
-        # Get initial data from September dataset
         if cve_id in initial_data:
             start_date = initial_data[cve_id]['published']
-            start_epss = initial_data[cve_id]['epss']
+            start_val = initial_data[cve_id][metric_key]
         else:
             start_date = '2025-09-01'
-            start_epss = row['epss']
+            start_val = row[metric_key] if metric_key in row else row['epss']
 
-        dates = []
-        epss_values = []
+        dates = [start_date]
+        values = [start_val]
 
-        # Start from publication date with initial EPSS
-        dates.append(start_date)
-        epss_values.append(start_epss)
-
-        # Get historical data from API
         if cve_id in historical_data and len(historical_data[cve_id]) > 0:
             history = historical_data[cve_id]
+            filtered = [h for h in history if h['date'] >= start_date]
 
-            # Filter data from start date onwards
-            filtered_history = [h for h in history if h['date'] >= start_date]
-
-            if len(filtered_history) > 0:
-                # Create step plot: for each point, add horizontal then vertical transition
-                for j, point in enumerate(filtered_history):
-                    # Add horizontal segment (keep same value until this date)
+            if len(filtered) > 0:
+                for point in filtered:
                     dates.append(point['date'])
-                    epss_values.append(epss_values[-1])
-
-                    # Add vertical segment (change to new value at this date)
-                    dates.append(point['date'])
-                    epss_values.append(point['epss'])
-
+                    values.append(point[metric_key])
             else:
-                # No API data after start date, extend to today
                 dates.append(datetime.now().strftime('%Y-%m-%d'))
-                epss_values.append(epss_values[-1])
+                values.append(values[-1])
         else:
-            # No historical API data, extend to today with flat line
             dates.append(datetime.now().strftime('%Y-%m-%d'))
-            epss_values.append(start_epss)
+            values.append(start_val)
 
         fig.add_trace(go.Scatter(
-            x=dates,
-            y=epss_values,
-            mode='lines',
-            name=cve_id,
-            line=dict(
-                color=colors[i % len(colors)],
-                width=2
-            ),
+            x=dates, y=values, mode='lines', name=cve_id,
+            line=dict(color=colors[i % len(colors)], width=2),
             hovertemplate=(
-                f'<b>{cve_id}</b><br>' +
-                'Date: %{x}<br>' +
-                'EPSS: %{y:.5f}<br>' +
+                f'<b>{cve_id}</b><br>'
+                f'Date: %{{x}}<br>'
+                f'{metric_label}: %{{y:.5f}}<br>'
                 '<extra></extra>'
             )
         ))
 
+    y_max = 1.0 if use_percentile else max(changes_df['Current EPSS'].max() * 1.2, 0.01)
     fig.update_layout(
         xaxis_title="Date",
-        yaxis_title="EPSS Score",
+        yaxis_title=metric_label,
         plot_bgcolor='#1e1e1e',
         paper_bgcolor='#1e1e1e',
         font=dict(color='#fafafa', family='Arial', size=12),
-        xaxis=dict(
-            gridcolor='#333333',
-            showgrid=True,
-            linecolor='#555555'
-        ),
-        yaxis=dict(
-            gridcolor='#333333',
-            showgrid=True,
-            linecolor='#555555',
-            range=[0, max(changes_df['Current EPSS'].max() * 1.2, 0.01)]
-        ),
-        hovermode='closest',
-        height=500,
+        xaxis=dict(gridcolor='#333333', showgrid=True, linecolor='#555555'),
+        yaxis=dict(gridcolor='#333333', showgrid=True, linecolor='#555555',
+                   range=[0, y_max]),
+        hovermode='closest', height=500,
         legend=dict(
-            orientation="v",
-            yanchor="top",
-            y=0.98,
-            xanchor="left",
-            x=1.02,
-            bgcolor='rgba(30, 30, 30, 0.9)',
-            bordercolor='#888888',
-            borderwidth=1,
-            font=dict(size=12, color='#ffffff')
+            orientation="v", yanchor="top", y=0.98, xanchor="left", x=1.02,
+            bgcolor='rgba(30, 30, 30, 0.9)', bordercolor='#888888',
+            borderwidth=1, font=dict(size=12, color='#ffffff')
         ),
         margin=dict(r=150)
     )
