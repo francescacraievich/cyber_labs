@@ -1,10 +1,10 @@
 [![Open in Streamlit](https://img.shields.io/badge/Open%20in-Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://cyberlabs-epss.streamlit.app/)
 
-# CVE Prioritization Using the Albanese et al. (2023) Vulnerability Metrics Framework
+# CVE Prioritization — Data-Driven Selection
 
 ## Overview
 
-This project implements a principled methodology for vulnerability prioritization based on the framework proposed by Albanese et al. (2023). The goal is to identify CVEs with low current exploitation probability (EPSS < 1%) that are most likely to become high-priority threats in the near future. The approach combines multiple technical and contextual metrics to produce a severity ranking that goes beyond traditional CVSS scoring.
+This project implements a data-driven methodology for vulnerability prioritization. The goal is to identify CVEs with low current exploitation probability (EPSS < 1%) that are most likely to become high-priority threats in the near future. The approach combines 9 measurable factors from public data sources (NVD, CISA KEV, MITRE CWE Top 25) to produce a composite severity ranking that goes beyond traditional CVSS scoring.
 
 ## Methodology
 
@@ -12,83 +12,50 @@ This project implements a principled methodology for vulnerability prioritizatio
 
 - **NVD Data**: CVEs published between 2025-09-01 and 2025-10-01 are collected from the NVD API.
 - **EPSS Data**: Latest Exploit Prediction Scoring System (EPSS) scores are merged with the NVD dataset.
-- **Filtering**: Only CVEs with EPSS < 1% are considered for further analysis.
+- **CISA KEV**: The Known Exploited Vulnerabilities catalog is downloaded to compute vendor exploitation frequency.
+- **Filtering**: Only CVEs with EPSS < 1% are considered for candidate selection.
 
 ### 2. Feature Engineering
 
-For each CVE, the following features are extracted or derived:
-- **CVSS Base Score**: Technical severity (0-10 scale).
-- **Number of References**: Proxy for public visibility and research interest.
-- **Attack Vector, Complexity, Privileges**: Key CVSS submetrics.
-- **Vendor**: Extracted from CPEs; flagged if a "popular vendor".
-- **CWE List**: Used to flag "dangerous" weakness types (e.g., SQLi, XSS).
-- **Other fields**: Description, publication date, etc.
+For each CVE, 9 factors are extracted or derived:
 
-### 3. Metric Calculation
+| # | Factor | Source | Rationale |
+|---|--------|--------|-----------|
+| 1 | CVSS Base Score | NVD CVSS v3.1 | Higher severity = more attractive target |
+| 2 | Network Attack Vector | NVD CVSS v3.1 | Remote exploitability enables automated scanning |
+| 3 | Low Attack Complexity | NVD CVSS v3.1 | Easy exploits get weaponized faster |
+| 4 | No Privileges Required | NVD CVSS v3.1 | No-auth vulns accessible to any attacker |
+| 5 | Exploit References | NVD reference tags | Public PoCs lower exploitation barrier |
+| 6 | Vendor KEV Frequency | CISA KEV catalog | Vendors with exploitation history are higher risk |
+| 7 | CWE in MITRE Top 25 | MITRE CWE Top 25 (2024) | Authoritative dangerous weakness ranking |
+| 8 | No Patch Available | NVD reference tags | Unpatched vulns remain exploitable |
+| 9 | Pre-Oct-1 KEV Signal | CISA KEV dateAdded | Confirmed exploitation = strongest signal |
 
-#### a. Exploitation Likelihood ($\rho(v)$, Equation 14)
+### 3. Scoring
 
-Probability that an attacker will exploit the vulnerability, modeled as a product of exponential factors:
+Simple additive score — each factor contributes equally (weight = 1). No exponential transformations, no tunable parameters. The composite score ranges from 0 to 9.
 
-$$
-\rho(v) = \prod_{X \in X^\uparrow_l} \left(1 - e^{-\alpha_X f_X(X(v))}\right)
-$$
+### 4. Candidate Selection
 
-Where $X^\uparrow_l$ are variables that increase likelihood, such as:
-- CVSS base score (normalized)
-- Number of references (normalized)
-- Network attack vector
-- Low attack complexity
-- No privileges required
-- Dangerous CWE present
+- **Stage 1**: Pre-October-1 CISA KEV CVEs are always selected (confirmed active exploitation).
+- **Stage 2**: Remaining slots filled by highest composite score, with max 2 CVEs per vendor (portfolio diversification).
+- **Validation**: Current EPSS scores are fetched to track prediction accuracy.
 
-#### b. Exposure Factor ($ef(v)$, Equation 17)
-
-Relative loss of utility if the vulnerability is exploited:
-
-$$
-ef(v) = \prod_{X \in X^\uparrow_e} \left(1 - e^{-\alpha_X f_X(X(v))}\right)
-$$
-
-Where $X^\uparrow_e$ are variables that increase exposure, such as:
-- CVSS impact (proxied by base score)
-- Popular vendor
-
-#### c. Severity Score ($s(v)$, Equation 18)
-
-Overall prioritization metric, combining likelihood and exposure:
-
-$$
-s(v) = \rho(v) \times ef(v)
-$$
-
-### 4. Parameter Tuning
-
-- $\alpha$ values for each factor are set as recommended in the paper (e.g., cvss=2.0, refs=1.5, network=3.0, etc.).
-- These control the influence of each variable and can be tuned for different scenarios.
-
-### 5. Candidate Selection
-
-- **Ranking**: All low-EPSS CVEs are ranked by their computed severity score $s(v)$.
-- **Selection**: The top 10 CVEs with the highest $s(v)$ are selected as candidates most likely to see an increase in exploitation probability.
-- **Justification**: These CVEs typically have high technical severity, are remotely exploitable, affect popular vendors, have dangerous CWEs, and/or high public visibility.
-
-### 6. Submission & Tracking
+### 5. Submission & Tracking
 
 - The selected 10 CVEs are exported to a CSV file for tracking.
-- Their EPSS scores will be monitored over time to validate the predictive power of the framework.
-
+- Their EPSS scores are monitored over time via the Streamlit dashboard.
 
 ## Files
 
-- `LAB_EPSS.ipynb`: Main notebook implementing the methodology.
+- `LAB_EPSS_datadriven.ipynb`: Main notebook implementing the methodology.
+- `epss_dashboard.py`: Streamlit dashboard for EPSS evolution tracking.
+- `preprocessing_utils.py`: Utility functions for NVD data extraction and normalization.
 - `data/`: Contains input datasets and output submission file.
-- `preprocessing_utils.py`: Utility functions for data extraction and normalization.
 
 ## References
 
-- Albanese et al. (2023), "A framework for designing vulnerability metrics"
 - [EPSS API](https://www.first.org/epss/api)
+- [CISA KEV Catalog](https://www.cisa.gov/known-exploited-vulnerabilities-catalog)
+- [MITRE CWE Top 25 (2024)](https://cwe.mitre.org/top25/archive/2024/2024_cwe_top25.html)
 - NVD (National Vulnerability Database)
-
-
