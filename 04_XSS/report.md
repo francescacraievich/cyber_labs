@@ -203,3 +203,7 @@ In the **Server-side XSS Protection** challenge, the defense exists on the serve
 ## 8. Conclusions
 
 The four challenges demonstrate the full spectrum of XSS vulnerabilities. DOM and Reflected XSS are non-persistent and differ in whether the payload passes through the server. Client-side and Server-side XSS Protection are both Stored XSS that persist in the database, but differ in where the protection is applied and how it must be bypassed. Together, they show that XSS defense must operate at every layer of the application.
+
+---
+
+> **Disclosure:** An LLM (Claude) was used to assist with the organization and formatting of this report.
