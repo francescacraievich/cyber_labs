@@ -48,7 +48,7 @@ Simple additive score — each factor contributes equally (weight = 1). No expon
 
 ## Files
 
-- `LAB_EPSS_datadriven.ipynb`: Main notebook implementing the methodology.
+- `LAB_EPSS.ipynb`: Main notebook implementing the methodology.
 - `epss_dashboard.py`: Streamlit dashboard for EPSS evolution tracking.
 - `preprocessing_utils.py`: Utility functions for NVD data extraction and normalization.
 - `data/`: Contains input datasets and output submission file.
