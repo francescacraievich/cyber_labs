@@ -12,5 +12,6 @@ Id: IN23000026
 | 06 — AiTM: SSLStrip with BURP Proxy | [docsify-this.net](https://docsify-this.net/?basePath=https://raw.githubusercontent.com/francescacraievich/cyber_labs/main/06_AITM_1&homepage=report.md) |
 | 06 — AiTM: ARP Cache Poisoning | [docsify-this.net](https://docsify-this.net/?basePath=https://raw.githubusercontent.com/francescacraievich/cyber_labs/main/06_AITM_2&homepage=report.md) |
 | 06 — AiTM: DNS Redirect via ARP Spoofing | [docsify-this.net](https://docsify-this.net/?basePath=https://raw.githubusercontent.com/francescacraievich/cyber_labs/main/06_AITM_3&homepage=report.md) |
+| 07 — SAST: Static Code Analysis | [slides](07_SAST/lab07_sast.pptx) |
 
-Note: the EPSS lab is a Jupyter notebook rather than a markdown report, so docsify-this (which renders markdown) doesn't apply there — the notebook renders directly on GitHub, and results are tracked live on the Streamlit dashboard.
+Note: the EPSS lab is a Jupyter notebook rather than a markdown report, so docsify-this doesn't apply there — the notebook renders directly on GitHub, and results are tracked live on the Streamlit dashboard.
