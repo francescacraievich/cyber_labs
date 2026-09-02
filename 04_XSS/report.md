@@ -47,7 +47,7 @@ The browser parsed the `<iframe>` tag, executed the `javascript`, and displayed 
 
 ### 2.3 Analysis with Burp Suite
 
-Juice Shop is a Single Page Application (SPA) built with Angular: all routing happens client-side via the URL fragment (`#/...`), without full page reloads. When the search is performed, Angular reads the `q` parameter directly from the fragment and renders it into the DOM using an unsafe method, without waiting for any server response. This is where the XSS executes.
+Juice Shop is a Single Page Application (SPA) built with Angular: all routing happens client-side via the URL fragment (`#/...`), without full page reloads. When the search is performed, Angular reads the `q` parameter directly from the fragment and renders it into the DOM via `bypassSecurityTrustHtml()` (a `DomSanitizer` method that explicitly disables Angular's built-in XSS protection), without waiting for any server response. This is where the XSS executes.
 
 A separate API call (`GET /rest/products/search?q=...`) is also made to fetch product results, and the payload does appear in that request. However, this is irrelevant to the XSS: the malicious code has already been parsed and executed by the browser during DOM rendering, independently of the API response (which simply returns `"data": []`).
 
@@ -107,9 +107,9 @@ The server does not build a dynamic HTML page in the traditional reflected XSS s
 
 From the user's perspective, both challenges appear identical: an `<iframe>` payload triggers an `alert()`. However, the underlying mechanisms are fundamentally different.
 
-In the **DOM XSS** challenge, the input never leaves the browser. The URL fragment (`#/search?q=PAYLOAD`) is read by client-side JavaScript, which extracts the value and writes it directly into the page's DOM. The server has no awareness of the payload. The vulnerability lies entirely in the client-side code that uses an unsafe DOM manipulation method.
+In the **DOM XSS** challenge, the input never leaves the browser. The URL fragment (`#/search?q=PAYLOAD`) is read by client-side JavaScript, which extracts the value and writes it directly into the page's DOM. The server has no awareness of the payload. The vulnerability lies entirely in the client-side code that uses `bypassSecurityTrustHtml()` to render unsanitized input into the DOM.
 
-In the **Reflected XSS** challenge, the input travels through the server. The tracking ID is sent as a path parameter in an API request (`/rest/track-order/track-result?id=PAYLOAD`). The server processes this input and includes it in its JSON response. The server still "reflects" the attacker-controlled string back to the client. The client-side code then renders this reflected value into the DOM unsafely. The vulnerability is a combination of server-side failure (not sanitizing the input in the response) and client-side failure (rendering the response without encoding).
+In the **Reflected XSS** challenge, the input travels through the server. The tracking ID is sent as a path parameter in an API request (`/rest/track-order/PAYLOAD`). The server processes this input and includes it in its JSON response. The server still "reflects" the attacker-controlled string back to the client. The client-side code then renders this reflected value into the DOM unsafely. 
 
 ---
 

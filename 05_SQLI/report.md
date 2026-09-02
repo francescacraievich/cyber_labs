@@ -21,7 +21,7 @@ Firefox was configured to proxy all traffic through Burp Suite on port 8080.
 
 ---
 
-## 2. Authentication Bypass — Login Bender
+## 2. Authentication Bypass - Login Bender
 
 **Challenge:** *Log in with Bender's user account.*
 
@@ -102,7 +102,7 @@ models.sequelize.query(
 
 ---
 
-## 3. Data Extraction — Database Schema
+## 3. Data Extraction - Database Schema
 
 **Challenge:** *Exfiltrate the entire DB schema definition via SQL Injection.*
 
@@ -126,7 +126,7 @@ The vulnerability was confirmed by injecting a single quote (`'`), which returne
 
 ![Burp Suite — test'))-- returns 200 OK with empty data](img/database-burp-test2.png)
 
-**Step 2 - Find the column count.** A `UNION SELECT` requires matching the number of columns. Using `NULL` for all columns caused a 500 application error (the JavaScript code crashes when trying to access properties on null values), so numeric placeholders were used instead. Testing with incrementing values: `test')) UNION SELECT 1,2,3,4,5,6,7,8,9--` succeeded, confirming **9 columns**.
+**Step 2 - Find the column count.** A `UNION SELECT` requires matching the number of columns. Testing with incrementing values: `test')) UNION SELECT 1,2,3,4,5,6,7,8,9--` succeeded, confirming **9 columns**.
 
 **Step 3 - Identify the system catalog.** Since the database is SQLite, the system table is `sqlite_master`, which stores `CREATE TABLE` statements in a column named `sql`.
 

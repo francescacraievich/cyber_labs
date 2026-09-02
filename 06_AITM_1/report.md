@@ -61,7 +61,11 @@ The target was selected by verifying the absence of HSTS headers using `curl`:
 
 ![curl output for subito.it](img/curl_subito.png)
 
-The HTTP response (403 from Akamai CDN) did not include a `Strict-Transport-Security` header, making it a candidate for the SSLStrip attack.
+The HTTP response (403 from Akamai CDN) did not include a `Strict-Transport-Security` header. To further confirm, the site was checked on [securityheaders.com](https://securityheaders.com), which independently confirmed the absence of the `Strict-Transport-Security` header, awarding the site an overall grade of **F**.
+
+![securityheaders.com report for subito.it](img/securityheaders_subito.png)
+
+With HSTS confirmed absent, subito.it was selected as the target for the SSLStrip attack.
 
 
 ### 3.2 Attack Execution
@@ -94,7 +98,7 @@ setInterval(function(){
 </script>
 ```
 
-This script uses `setInterval` to re-inject a banner element every 500ms, surviving the framework's hydration cycle. The result was a persistent red banner reading "SSLStrip ATTACK DEMO" displayed on top of the page.
+This script uses `setInterval` to re-inject a banner element every 500ms. The result was a persistent red banner reading "SSLStrip ATTACK DEMO" displayed on top of the page.
 
 ![Successful SSLStrip banner injection on subito.it](img/success_SSLstrip_banner.png)
 
@@ -134,7 +138,7 @@ With `network.stricttransportsecurity.preloadlist` set to `true` (default), navi
 
 This confirms that HSTS prevents SSLStrip by instructing the browser to connect exclusively over HTTPS, regardless of the protocol specified in the URL or any link.
 
-### 4.3 Experiment 2: HSTS Disabled — Vulnerability Window (Attack Succeeds)
+### 4.3 Experiment 2: HSTS Disabled - Vulnerability Window (Attack Succeeds)
 
 To simulate the HSTS vulnerability window (a user who has never visited the site, or whose HSTS policy has expired), the following steps were taken:
 
