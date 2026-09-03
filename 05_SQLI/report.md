@@ -1,4 +1,4 @@
-# SQL Injection Lab Report — OWASP Juice Shop
+# SQL Injection Lab Report - OWASP Juice Shop
 
 **Course:** [505MI] Cybersecurity Lab A.Y. 2025/2026  
 **Author:** Francesca Craievich  
@@ -59,7 +59,7 @@ SELECT * FROM Users WHERE email='bender@juice-sh.op'--' AND password='anything'
 Everything after `--` is treated as a SQL comment. The query now only checks the email, bypassing password verification entirely. This technique works for any user whose email is known, making it more dangerous than a simple tautology because it allows **targeted account takeover**.
 
 
-![Login Bender — successful login via SQL injection](img/bender-solved.png)
+![Login Bender - successful login via SQL injection](img/bender-solved.png)
 
 ### 2.4 Analysis with Burp Suite
 
@@ -74,7 +74,7 @@ Burp Suite's HTTP history shows the POST request to `/rest/user/login` with the 
 
 The server responds with `200 OK` and a valid authentication token with `"umail":"bender@juice-sh.op"`, confirming that the password was never checked.
 
-![Burp Suite — Login Bender: POST request with SQL injection payload and 200 OK response](img/bender-burp.png)
+![Burp Suite - Login Bender: POST request with SQL injection payload and 200 OK response](img/bender-burp.png)
 
 ### 2.5 Vulnerable code and fix
 
@@ -96,9 +96,9 @@ models.sequelize.query(
 )
 ```
 
-![Find It — vulnerable line identified in login()](img/code-bender.png)
+![Find It - vulnerable line identified in login()](img/code-bender.png)
 
-![Fix It — bind parameters selected as the secure fix for login](img/fix_bender.png)
+![Fix It - bind parameters selected as the secure fix for login](img/fix_bender.png)
 
 ---
 
@@ -118,19 +118,19 @@ SELECT * FROM Products WHERE ((name LIKE '%$q%' OR description LIKE '%$q%') AND 
 
 The vulnerability was confirmed by injecting a single quote (`'`), which returned a `SQLITE_ERROR` revealing both the vulnerability and the database type (SQLite).
 
-![SQLITE_ERROR after injecting a single quote — confirms SQLi and SQLite](img/database-test.png)
+![SQLITE_ERROR after injecting a single quote - confirms SQLi and SQLite](img/database-test.png)
 
 ### 3.2 Exploitation
 
 **Step 1 - Close the query syntax.** The query wraps its conditions in double parentheses: `((name LIKE '...' OR description LIKE '...') AND deletedAt IS NULL)`. After breaking out of the string with `'`, the injection is still inside two levels of `(`. The payload `test'))--` closes both parentheses and comments out the rest, producing valid SQL that returns an empty but successful response.
 
-![Burp Suite — test'))-- returns 200 OK with empty data](img/database-burp-test2.png)
+![Burp Suite - test'))-- returns 200 OK with empty data](img/database-burp-test2.png)
 
 **Step 2 - Find the column count.** A `UNION SELECT` requires matching the number of columns. Testing with incrementing values: `test')) UNION SELECT 1,2,3,4,5,6,7,8,9--` succeeded, confirming **9 columns**.
 
 **Step 3 - Identify the system catalog.** Since the database is SQLite, the system table is `sqlite_master`, which stores `CREATE TABLE` statements in a column named `sql`.
 
-**Step 4 — Extract the schema:**
+**Step 4 - Extract the schema:**
 
 ```
 http://localhost:3000/rest/products/search?q=test')) UNION SELECT sql,'2','3','4','5','6','7','8','9' FROM sqlite_master--
@@ -138,9 +138,9 @@ http://localhost:3000/rest/products/search?q=test')) UNION SELECT sql,'2','3','4
 
 The JSON response contained the `CREATE TABLE` statements for every table, including `Users`, `Products`, `BasketItems`, `Addresses`, and others.
 
-![Database Schema — CREATE TABLE statements extracted via UNION SELECT](img/database-createtable-burp.png)
+![Database Schema - CREATE TABLE statements extracted via UNION SELECT](img/database-createtable-burp.png)
 
-![Database Schema — challenge solved](img/database-popup.png)
+![Database Schema - challenge solved](img/database-popup.png)
 
 
 
@@ -163,9 +163,9 @@ models.sequelize.query(
 );
 ```
 
-![Find It — vulnerable line identified in searchProducts()](img/coding-challenge-database.png)
+![Find It - vulnerable line identified in searchProducts()](img/coding-challenge-database.png)
 
-![Fix It — Sequelize replacement mechanism selected as the secure fix](img/fix-database.png)
+![Fix It - Sequelize replacement mechanism selected as the secure fix](img/fix-database.png)
 
 ---
 

@@ -1,4 +1,4 @@
-# XSS Extra Challenges — OWASP Juice Shop
+# XSS Extra Challenges - OWASP Juice Shop
 
 **Course:** [505MI] Cybersecurity Lab A.Y. 2025/2026  
 **Author:** Francesca Craievich  
@@ -45,9 +45,9 @@ By intercepting a legitimate registration request in Burp and sending it to Repe
 
 The server returned **201 Created**, the payload was stored as the user's email in the database. To trigger the XSS, the administration panel at `/#/administration` was accessed by logging in as admin via SQL injection (`' OR 1=1--` as email, any password). The admin panel renders the list of registered users and the `<iframe>` was parsed and executed, triggering the alert.
 
-![Client-side XSS Protection — alert triggered on the administration page](img/client-side-popup.png)
+![Client-side XSS Protection - alert triggered on the administration page](img/client-side-popup.png)
 
-![Burp Suite — POST /api/Users with XSS payload in email field](img/client-side-burp.png)
+![Burp Suite - POST /api/Users with XSS payload in email field](img/client-side-burp.png)
 
 ---
 
@@ -59,7 +59,7 @@ This challenge is also a **Stored XSS**, but unlike the previous one, the server
 
 To understand how the server sanitizes input, the application's dependency file was retrieved from the FTP endpoint. Accessing `/ftp/package.json.bak` directly returns a 403 error ("Only .md and .pdf files are allowed"):
 
-![403 error — only .md and .pdf files are allowed](img/error.png)
+![403 error - only .md and .pdf files are allowed](img/error.png)
 
 A **Poison Null Byte** bypass was used:
 
@@ -91,9 +91,9 @@ The sanitizer sees `<script>Foo</script>` as a disallowed tag and removes it. Wh
 
 This payload was sent via Burp Intercept by modifying the `comment` field in the Customer Feedback POST request to `/api/Feedbacks/`. The server sanitized the input but the bypass survived, and the payload was stored in the database. Visiting `/#/about`, which displays a customer feedback, triggered the alert.
 
-![Server-side XSS Protection — alert triggered on the About page](img/server-side-popup.png)
+![Server-side XSS Protection - alert triggered on the About page](img/server-side-popup.png)
 
-![Burp Suite — feedback POST with nested tag bypass](img/server-side-burp.png)
+![Burp Suite - feedback POST with nested tag bypass](img/server-side-burp.png)
 
 ---
 

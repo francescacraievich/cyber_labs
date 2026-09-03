@@ -82,7 +82,7 @@ With BURP configured for SSLStrip, navigating to `http://www.subito.it` in Firef
 
 To demonstrate the full impact of the attack, a content modification was performed on the intercepted response. Subito.it is built with **Next.js**, a React-based framework that performs client-side hydration, the JavaScript framework reconstructs the entire DOM after the initial HTML loads, overwriting any static HTML modifications.
 
-To overcome this, a persistent JavaScript payload was injected after the `<body>` tag in the intercepted response:
+To overcome this, a JavaScript payload was injected after the `<body>` tag in the intercepted response:
 
 ```html
 <script>
@@ -98,7 +98,7 @@ setInterval(function(){
 </script>
 ```
 
-This script uses `setInterval` to re-inject a banner element every 500ms. The result was a persistent red banner reading "SSLStrip ATTACK DEMO" displayed on top of the page.
+This script uses `setInterval` to re-inject a banner element every 500ms. The result was a red banner reading "SSLStrip ATTACK DEMO" displayed on top of the page.
 
 ![Successful SSLStrip banner injection on subito.it](img/success_SSLstrip_banner.png)
 
@@ -148,7 +148,7 @@ To simulate the HSTS vulnerability window (a user who has never visited the site
 Navigating to `http://github.com` now resulted in:
 
 - The browser displayed `http://github.com` with a **"Not Secure"** warning
-- The SSLStrip attack succeeded — the page was loaded over HTTP
+- The SSLStrip attack succeeded - the page was loaded over HTTP
 - Content modification was performed: the page title was changed to **"GITHUB HACKED!"**, demonstrating full control over the response content
 
 ![GitHub page with "GITHUB HACKED!" title modification](img/CASO_b_github_hacked.png)

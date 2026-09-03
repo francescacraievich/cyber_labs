@@ -1,4 +1,4 @@
-# XSS Lab Report — OWASP Juice Shop
+# XSS Lab Report - OWASP Juice Shop
 
 **Course:** [505MI] Cybersecurity Lab A.Y. 2025/2026  
 **Author:** Francesca Craievich  
@@ -32,18 +32,18 @@ The Juice Shop search functionality at `/#/search?q=...` reads the query paramet
 The following payload was entered in the search bar:
 
 ```
-<iframe src="javascript:alert('xss')">
+<iframe src="javascript:alert(`xss`)">
 ```
 
 Resulting URL:
 
 ```
-http://localhost:3000/#/search?q=<iframe src%3D"javascript:alert('xss')">
+http://localhost:3000/#/search?q=<iframe src%3D"javascript:alert(`xss`)">
 ```
 
 The browser parsed the `<iframe>` tag, executed the `javascript`, and displayed an alert box containing "xss". The green banner confirmed the challenge was solved.
 
-![DOM XSS — alert triggered and challenge solved](img/DOM-xss.png)
+![DOM XSS - alert triggered and challenge solved](img/DOM-xss.png)
 
 ### 2.3 Analysis with Burp Suite
 
@@ -53,7 +53,7 @@ A separate API call (`GET /rest/products/search?q=...`) is also made to fetch pr
 
 This confirms the DOM-based nature of the vulnerability: the attack is entirely contained within the client-side code that reads the fragment and writes it into the DOM. The server never processes or reflects the payload in a way that contributes to the exploit.
 
-![Burp Suite — DOM XSS: the search API request is visible but irrelevant to the exploit](img/DOM-xss-burp.png)
+![Burp Suite - DOM XSS: the search API request is visible but irrelevant to the exploit](img/DOM-xss-burp.png)
 
 ---
 
@@ -65,15 +65,15 @@ The order tracking feature at `/#/track-result?id=...` sends the tracking ID to 
 
 ### 3.2 Exploitation
 
-The payload `<iframe src="javascript:alert('xss')">` was placed in the order tracking ID. In Juice Shop the route `/#/track-order` redirects to the homepage, so the direct URL format was used:
+The payload `<iframe src="javascript:alert(`xss`)">` was placed in the order tracking ID. In Juice Shop the route `/#/track-order` redirects to the homepage, so the direct URL format was used:
 
 ```
-http://localhost:3000/#/track-result?id=<iframe src="javascript:alert('xss')">
+http://localhost:3000/#/track-result?id=<iframe src="javascript:alert(`xss`)">
 ```
 
 The payload triggered an alert, confirming the vulnerability.
 
-![Reflected XSS — alert triggered on the order tracking page](img/reflected-xss.png)
+![Reflected XSS - alert triggered on the order tracking page](img/reflected-xss.png)
 
 ### 3.3 Analysis with Burp Suite
 
@@ -91,7 +91,7 @@ The server response (HTTP 200 OK) reflects the payload in the `orderId` field:
   "status": "success",
   "data": [
     {
-      "orderId": "<iframe src=\"javascript:alert('xss')\">"
+      "orderId": "<iframe src=\"javascript:alert(`xss`)\">"
     }
   ]
 }
@@ -99,7 +99,7 @@ The server response (HTTP 200 OK) reflects the payload in the `orderId` field:
 
 The server does not build a dynamic HTML page in the traditional reflected XSS sense. Instead, it returns a JSON response that includes the unsanitized tracking ID. The client-side Angular code then takes this `orderId` value and inserts it into the DOM without encoding, which causes the browser to parse and execute the injected `<iframe>`.
 
-![Burp Suite — server response reflecting the XSS payload in the orderId field](img/reflected-xss-burp.png)
+![Burp Suite - server response reflecting the XSS payload in the orderId field](img/reflected-xss-burp.png)
 
 ---
 

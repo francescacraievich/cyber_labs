@@ -29,7 +29,7 @@ The attack chain works as follows: the Attacker's Nameserver (10.9.0.153) sends 
 
 The original SEED Labs DNS_Local Labsetup-arm is designed for DNS Cache Poisoning experiments. For this lab, the following modifications were made to support the DNS Redirect via ARP Spoofing attack.
 
-### 2.1 Attacker NS — Zone Configuration
+### 2.1 Attacker NS - Zone Configuration
 
 A new zone for `alerenda.github.io` was added to the Attacker NS's `named.conf`:
 
@@ -41,13 +41,13 @@ The zone entry at line 23 tells BIND to serve the zone file `/etc/bind/zone_aler
 
 The key records are: `@ IN A 10.9.0.2` and `www IN A 10.9.0.2`, which resolve `alerenda.github.io` to the Attacker WS. The wildcard record `* IN A 10.9.0.2` ensures that any subdomain also resolves to the attacker. The `ns IN A 10.9.0.153` record points to the Attacker NS itself as the authoritative nameserver. The zone file and its zone declaration in `named.conf` were also added to the Attacker NS Dockerfile's `COPY` instruction so they are included in the container image at build time.
 
-### 2.2 Local DNS Server — Forwarders
+### 2.2 Local DNS Server - Forwarders
 
 The Local DNS Server's `named.conf.options` was configured with a forwarder to `8.8.8.8` (Google Public DNS), so that it can resolve external domains recursively before the attack:
 
 ![Forwarders configuration in named.conf.options](img/forwarders.png)
 
-### 2.3 Attacker WS — Fake Web Page
+### 2.3 Attacker WS - Fake Web Page
 
 A simple HTML page was created at `volumes/ws/index.html` to be served by the Attacker WS:
 
@@ -59,7 +59,7 @@ The ARP spoofing script (`arp_request.py`) was placed in the shared `volumes/` d
 
 ![ARP spoofing script](img/script_Arp_req.png)
 
-The script uses Scapy to send spoofed ARP Requests every 2 seconds. Each request claims that the Local DNS Server's IP (`10.9.0.53`) belongs to the Attacker NS's MAC address. The broadcast destination ensures the User receives the packet and updates its ARP cache. This is the same ARP Request technique demonstrated in Lab 06_AITM_2, Task 1A — the most effective method since it poisons the cache regardless of its initial state.
+The script uses Scapy to send spoofed ARP Requests every 2 seconds. Each request claims that the Local DNS Server's IP (`10.9.0.53`) belongs to the Attacker NS's MAC address. The broadcast destination ensures the User receives the packet and updates its ARP cache. This is the same ARP Request technique demonstrated in Lab 06_AITM_2, Task 1A - the most effective method since it poisons the cache regardless of its initial state.
 
 ---
 
@@ -67,7 +67,7 @@ The script uses Scapy to send spoofed ARP Requests every 2 seconds. Each request
 
 Before launching the attack, the following commands were executed from the **User container** (10.9.0.5) to establish the baseline behavior.
 
-### 3.1 DNS Resolution — dig
+### 3.1 DNS Resolution - dig
 
 ```
 dig +short alerenda.github.io
@@ -77,7 +77,7 @@ dig +short alerenda.github.io
 
 The DNS query returns the four real GitHub Pages IP addresses. The Local DNS Server correctly forwarded the query to Google DNS and cached the legitimate response.
 
-### 3.2 ARP Cache — arp -n
+### 3.2 ARP Cache - arp -n
 
 ```
 arp -n
@@ -87,7 +87,7 @@ arp -n
 
 The ARP cache shows the real MAC address of the Local DNS Server: `86:88:ce:2d:f7:f7` for IP `10.9.0.53`. This is the value that will change after ARP poisoning.
 
-### 3.3 HTTP Response — curl -I
+### 3.3 HTTP Response - curl -I
 
 ```
 curl -I alerenda.github.io
@@ -103,9 +103,9 @@ The HTTP HEAD request reaches the real GitHub Pages server, which responds with 
 
 The attack requires three terminals operating simultaneously. The following screenshot shows all three terminals after the attack succeeded:
 
-![Complete attack result — all three terminals](img/attack_success.png)
+![Complete attack result - all three terminals](img/attack_success.png)
 
-### 4.1 Terminal 1 — Attacker NS (10.9.0.153)
+### 4.1 Terminal 1 - Attacker NS (10.9.0.153)
 
 From the Attacker NS container, two commands were executed:
 
@@ -118,7 +118,7 @@ The first command adds the Local DNS Server's IP (`10.9.0.53`) as a secondary ad
 
 The second command launches the ARP spoofing script, which continuously sends spoofed ARP Requests to poison the User's cache (visible in the top terminal: "SENDING SPOOFED ARP REQUEST......").
 
-### 4.2 Terminal 2 — Attacker WS (10.9.0.2)
+### 4.2 Terminal 2 - Attacker WS (10.9.0.2)
 
 From the Attacker WS container, a Python HTTP server was started:
 
@@ -129,11 +129,11 @@ python3 -m http.server 80
 
 This serves the fake `index.html` page on port 80. After the User's request arrives, the server logs: `10.9.0.5 - - "GET / HTTP/1.1" 200 -` (visible in the middle terminal).
 
-### 4.3 Terminal 3 — User Verification (10.9.0.5)
+### 4.3 Terminal 3 - User Verification (10.9.0.5)
 
 With both attacker components running, the following verification commands were executed from the User container (bottom terminal).
 
-**ARP Cache — Poisoned:**
+**ARP Cache - Poisoned:**
 
 ```
 arp -n
@@ -148,7 +148,7 @@ The User's ARP cache now shows two entries:
 
 The MAC address for `10.9.0.53` has changed from the real Local DNS Server's MAC (`86:88:ce:2d:f7:f7`) to the Attacker NS's MAC (`42:fd:43:65:6d:6f`). The ARP poisoning is active.
 
-**DNS Resolution — Redirected:**
+**DNS Resolution - Redirected:**
 
 ```
 dig +short alerenda.github.io
@@ -156,7 +156,7 @@ dig +short alerenda.github.io
 
 The query now returns **`10.9.0.2`** instead of the four GitHub IPs. The DNS request was sent to `10.9.0.53` (as configured in the User's `resolv.conf`), but due to the poisoned ARP cache, it was delivered to the Attacker NS, which responded with its malicious zone data pointing to the Attacker WS.
 
-**HTTP Response — Fake Page:**
+**HTTP Response - Fake Page:**
 
 ```
 curl alerenda.github.io

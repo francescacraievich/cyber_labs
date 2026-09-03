@@ -8,7 +8,7 @@
 
 ## 1. Introduction
 
-This report documents the ARP Cache Poisoning lab from the SEED Labs project. ARP (Address Resolution Protocol) is a stateless protocol that maps IP addresses to MAC addresses on a local network. Because ARP has no authentication mechanism, any host on the LAN can send spoofed ARP packets to associate its own MAC address with another host's IP, redirecting traffic through itself. This is the foundation of ARP-based Adversary-in-the-Middle (AiTM) attacks.
+This report documents the ARP Cache Poisoning lab from the SEED Labs project. ARP (Address Resolution Protocol) is a stateless protocol that maps IP addresses to MAC addresses on a local network. Because ARP has no authentication mechanism, any host on the LAN can send spoofed ARP packets to associate its own MAC address with another host's IP, redirecting traffic through itself. 
 
 The lab is divided into three tasks. Task 1 explores three different methods to inject a forged ARP mapping into a victim's cache using Scapy: ARP Request, ARP Reply, and Gratuitous ARP. Task 2 uses bidirectional ARP poisoning to perform a man-in-the-middle attack on a Telnet session, replacing every typed character with the letter "Z". Task 3 applies the same technique to a Netcat session, selectively replacing the name "Francesca" with "AAAAAAAAA" (same length, 9 characters).
 
@@ -24,7 +24,7 @@ The lab is divided into three tasks. Task 1 explores three different methods to 
 
 ![MAC addresses obtained via ifconfig](img/MAC_addresses.png)
 
-The containers were started with `dcup` and accessed via the `docksh` alias (e.g. `docksh A-10.9.0.5 bash`). MAC addresses were retrieved by running `ifconfig eth0 | grep ether` inside each container.
+The containers were started with `dcup` and accessed via the `docksh`. MAC addresses were retrieved by running `ifconfig eth0 | grep ether` inside each container.
 
 ---
 
@@ -58,14 +58,14 @@ An ARP Reply (opcode 2) is sent unicast directly to A. The spoofed reply claims 
 
 ![Task 1B script](img/script_task1b.png)
 
-**Test 1 — Cache empty:** A's cache was cleared with `arp -d 10.9.0.6`. After running the attack script from M, A's cache remained empty. The unsolicited ARP Reply did not create a new entry.
+**Test 1 - Cache empty:** A's cache was cleared with `arp -d 10.9.0.6`. After running the attack script from M, A's cache remained empty. The unsolicited ARP Reply did not create a new entry.
 
 ![Cache empty: attack has no effect](img/task1b.-cache_A_vuota.png)
 
 
 **Observation:** The ARP Reply only works when A's cache already has an entry for B. An unsolicited reply to an empty cache is ignored by the kernel, which only updates existing mappings from replies.
 
-**Test 2 — Cache populated:** A first pinged B to populate the cache with B's real MAC (`3a:59:4c:10:29:58`). After running the attack script from M, A's cache was checked again: `10.9.0.6` now mapped to `c2:79:7a:52:23:9a` (M's MAC). The ARP Reply successfully overwrote the legitimate entry.
+**Test 2 - Cache populated:** A first pinged B to populate the cache with B's real MAC (`3a:59:4c:10:29:58`). After running the attack script from M, A's cache was checked again: `10.9.0.6` now mapped to `c2:79:7a:52:23:9a` (M's MAC). The ARP Reply successfully overwrote the legitimate entry.
 
 ![Cache populated: before and after poisoning](img/task1b_ping_cache_popolata.png)
 
@@ -78,13 +78,13 @@ A Gratuitous ARP is a special ARP Request where the sender IP equals the target 
 
 ![Task 1C script](img/script1c.png)
 
-**Test 1 — Cache empty:** A's cache was cleared with `arp -d 10.9.0.6`. After M sent the Gratuitous ARP, A's cache remained empty. The Gratuitous ARP did not create a new entry.
+**Test 1 - Cache empty:** A's cache was cleared with `arp -d 10.9.0.6`. After M sent the Gratuitous ARP, A's cache remained empty. The Gratuitous ARP did not create a new entry.
 
 ![Cache empty: Gratuitous ARP has no effect](img/task1c-cache-vuota.png)
 
 **Observation:** Like the ARP Reply, the Gratuitous ARP only updates existing cache entries and does not create new ones when the cache is empty.
 
-**Test 2 — Cache populated:** A pinged B first, populating the cache with B's real MAC. After M sent the Gratuitous ARP, A's cache was updated to map `10.9.0.6` to `c2:79:7a:52:23:9a` (M's MAC). The attack succeeded.
+**Test 2 - Cache populated:** A pinged B first, populating the cache with B's real MAC. After M sent the Gratuitous ARP, A's cache was updated to map `10.9.0.6` to `c2:79:7a:52:23:9a` (M's MAC). The attack succeeded.
 
 ![Cache populated: before and after Gratuitous ARP](img/task1c-cache-poplata.png)
 
@@ -92,9 +92,9 @@ A Gratuitous ARP is a special ARP Request where the sender IP equals the target 
 
 | Method | Cache populated | Cache empty |
 |---|---|---|
-| 1A — ARP Request (broadcast) | Poisoned | Poisoned |
-| 1B — ARP Reply (unicast) | Poisoned | No effect |
-| 1C — Gratuitous ARP (broadcast) | Poisoned | No effect |
+| 1A - ARP Request (broadcast) | Poisoned | Poisoned |
+| 1B - ARP Reply (unicast) | Poisoned | No effect |
+| 1C - Gratuitous ARP (broadcast) | Poisoned | No effect |
 
 The ARP Request is the most effective method: it poisons the cache regardless of its initial state. The ARP Reply and Gratuitous ARP can only overwrite existing entries.
 
@@ -187,7 +187,7 @@ Compared to the Telnet MITM script, the key differences are:
 
 ### 4.3 Result
 
-From A, two messages were sent: "Hi my name is Francesca" and "Francesca loves hacking!". On B, these appeared as "Hi my name is AAAAAAAAA" and "AAAAAAAAA loves hacking!" — the name was replaced while the rest of the message was preserved. The MITM script output confirmed each replacement.
+From A, two messages were sent: "Hi my name is Francesca" and "Francesca loves hacking!". On B, these appeared as "Hi my name is AAAAAAAAA" and "AAAAAAAAA loves hacking!" - the name was replaced while the rest of the message was preserved. The MITM script output confirmed each replacement.
 Additionally, a message containing "Francesca" was sent from B to A. Since the MITM script only modifies A-to-B traffic, the message arrived at A unaltered, confirming that B-to-A traffic is forwarded without any modification.
 
 ![Successful MITM on Netcat](img/netcat_success.png)
@@ -200,4 +200,4 @@ The lab demonstrated the complete ARP cache poisoning attack chain, from basic c
 
 Task 1 showed that ARP Request packets are the most versatile poisoning method, capable of creating new cache entries even when the victim's cache is empty. ARP Reply and Gratuitous ARP can only overwrite existing entries, making them less reliable for initial poisoning but still effective when the victim has recently communicated with the target.
 
-Tasks 2 and 3 demonstrated that once bidirectional ARP poisoning is in place, the attacker gains full control over the traffic between two hosts. By combining Scapy's packet sniffing and spoofing capabilities with careful IP forwarding management, the attacker can intercept, read, and modify any unencrypted application-layer data in real time — whether replacing every keystroke in a Telnet session or selectively altering specific content in a Netcat stream.
+Tasks 2 and 3 demonstrated that once bidirectional ARP poisoning is in place, the attacker gains full control over the traffic between two hosts. By combining Scapy's packet sniffing and spoofing capabilities with careful IP forwarding management, the attacker can intercept, read, and modify any unencrypted application-layer data in real time - whether replacing every keystroke in a Telnet session or selectively altering specific content in a Netcat stream.

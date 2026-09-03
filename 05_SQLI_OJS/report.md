@@ -1,4 +1,4 @@
-# SQL Injection Extra Challenges — OWASP Juice Shop
+# SQL Injection Extra Challenges - OWASP Juice Shop
 
 **Course:** [505MI] Cybersecurity Lab A.Y. 2025/2026  
 **Author:** Francesca Craievich  
@@ -21,7 +21,7 @@ Firefox was configured to proxy all traffic through Burp Suite on port 8080.
 
 ---
 
-## 2. Authentication Bypass — Ephemeral Accountant
+## 2. Authentication Bypass - Ephemeral Accountant
 
 **Challenge:** *Log in with the (non-existing) accountant `acc0unt4nt@juice-sh.op` without ever registering that user.*
 
@@ -52,7 +52,7 @@ The payload was built incrementally by analyzing each failure:
 ```
 **Result:** `401 Invalid email or password`. The application needs a numeric `id` to generate the authentication token.
 
-![Ephemeral Accountant — first attempt with all NULL values](img/eph-account-prova.png)
+![Ephemeral Accountant - first attempt with all NULL values](img/eph-account-prova.png)
 
 **Attempt 2** - Added `id=15`:
 ```
@@ -60,7 +60,7 @@ The payload was built incrementally by analyzing each failure:
 ```
 **Result:** `401` with `"status":"totp_token_required"`. The `totpSecret` column defaults to `''` (empty string), not `NULL`. Setting it to `NULL` made the application interpret it as TOTP being configured.
 
-![Ephemeral Accountant — TOTP error after adding id=15](img/eph-account-id-burp.png)
+![Ephemeral Accountant - TOTP error after adding id=15](img/eph-account-id-burp.png)
 
 **Attempt 3** - Set `totpSecret` to empty string:
 ```
@@ -68,7 +68,7 @@ The payload was built incrementally by analyzing each failure:
 ```
 **Result:** `200 OK` with a valid authentication token, but the challenge banner did not trigger. The challenge validator requires specific field values beyond just a successful login.
 
-![Ephemeral Accountant — 200 OK but challenge not triggered with totpSecret fix](img/eph-account-totp-burp.png)
+![Ephemeral Accountant - 200 OK but challenge not triggered with totpSecret fix](img/eph-account-totp-burp.png)
 
 **Attempt 4** - Populated all critical fields:
 ```
@@ -76,13 +76,13 @@ The payload was built incrementally by analyzing each failure:
 ```
 **Result:** `200 OK` and the challenge was solved. The validator checks that `role='accounting'` and that the password and username fields are populated.
 
-![Ephemeral Accountant — 200 OK with all critical fields populated](img/eph-account-burp-all-parameters.png)
+![Ephemeral Accountant - 200 OK with all critical fields populated](img/eph-account-burp-all-parameters.png)
 
-![Ephemeral Accountant — challenge solved](img/eph-account-popup.png)
+![Ephemeral Accountant - challenge solved](img/eph-account-popup.png)
 
 ---
 
-## 3. Data Extraction — User Credentials
+## 3. Data Extraction - User Credentials
 
 **Challenge:** *Retrieve a list of all user credentials via SQL Injection.*
 
@@ -90,7 +90,7 @@ The payload was built incrementally by analyzing each failure:
 
 ### 3.1 Assumptions
 
-From the schema extracted in the Database Schema challenge (main report, `05_SQLI`), the `Users` table contains `id`, `email`, and `password` columns. A `UNION SELECT` targeting these columns can extract all credentials. The UNION requires two conditions: same number of columns (9, already known) and compatible data types. Since SQLite is permissive with types, `NULL` can be used for unused columns — it is compatible with any data type, making it a cleaner and more portable choice than placeholder strings.
+From the schema extracted in the Database Schema challenge (main report, `05_SQLI`), the `Users` table contains `id`, `email`, and `password` columns. A `UNION SELECT` targeting these columns can extract all credentials. The UNION requires two conditions: same number of columns (9, already known) and compatible data types. Since SQLite is permissive with types, `NULL` can be used for unused columns - it is compatible with any data type, making it a cleaner and more portable choice than placeholder strings.
 
 ### 3.2 Exploitation
 
@@ -107,15 +107,15 @@ Sample results:
 | jim@juice-sh.op | `e541ca7ecf72b8d1286474fc613e5e45` |
 | bender@juice-sh.op | `0c36e517e3fa95aabf1bbffc6744a4ef` |
 
-![User Credentials — emails and password hashes extracted via UNION SELECT](img/user-credentials-burp.png)
+![User Credentials - emails and password hashes extracted via UNION SELECT](img/user-credentials-burp.png)
 
-![User Credentials — challenge solved](img/user-credentials-popup.png)
+![User Credentials - challenge solved](img/user-credentials-popup.png)
 
 ### 3.3 Hash cracking
 
 The passwords are stored as unsalted MD5 hashes. Using CrackStation, two hashes were reversed instantly: `admin@juice-sh.op` → `admin123`, `jim@juice-sh.op` → `ncc-1701` . 
 
-![CrackStation — MD5 hashes reversed to plaintext passwords](img/crackstation-pwd-jim.png)
+![CrackStation - MD5 hashes reversed to plaintext passwords](img/crackstation-pwd-jim.png)
 
 ![login with jim account](img/jim-login-popup.png)
 
