@@ -6,13 +6,13 @@ Id: IN23000026
 
 | Lab | Report |
 |---|---|
-| 01 — EPSS-based CVE Prioritization | [notebook](01_EPSS/LAB_EPSS.ipynb) · [Streamlit dashboard](https://cyberlabs-epss.streamlit.app/) |
-| 04 — XSS (OWASP Juice Shop) | [docsify-this.net](https://docsify-this.net/?basePath=https://raw.githubusercontent.com/francescacraievich/cyber_labs/main/04_XSS&homepage=report.md) |
-| 04 — XSS Extra (Client/Server-side Protection) | [docsify-this.net](https://docsify-this.net/?basePath=https://raw.githubusercontent.com/francescacraievich/cyber_labs/main/04_XSS_OJS&homepage=report.md) |
-| 05 — SQL Injection (OWASP Juice Shop) | [docsify-this.net](https://docsify-this.net/?basePath=https://raw.githubusercontent.com/francescacraievich/cyber_labs/main/05_SQLI&homepage=report.md) |
-| 05 — SQL Injection Extra (Ephemeral Accountant & User Credentials) | [docsify-this.net](https://docsify-this.net/?basePath=https://raw.githubusercontent.com/francescacraievich/cyber_labs/main/05_SQLI_OJS&homepage=report.md) |
-| 06 — AiTM: SSLStrip with BURP Proxy | [docsify-this.net](https://docsify-this.net/?basePath=https://raw.githubusercontent.com/francescacraievich/cyber_labs/main/06_AITM_1&homepage=report.md) |
-| 06 — AiTM: ARP Cache Poisoning | [docsify-this.net](https://docsify-this.net/?basePath=https://raw.githubusercontent.com/francescacraievich/cyber_labs/main/06_AITM_2&homepage=report.md) |
-| 06 — AiTM: DNS Redirect via ARP Spoofing | [docsify-this.net](https://docsify-this.net/?basePath=https://raw.githubusercontent.com/francescacraievich/cyber_labs/main/06_AITM_3&homepage=report.md) |
-| 07 — SAST: Static Code Analysis | [slides](07_SAST/lab07_sast.pptx) |
+| 01  EPSS-based CVE Prioritization | [notebook](01_EPSS/LAB_EPSS.ipynb) · [Streamlit dashboard](https://cyberlabs-epss.streamlit.app/) |
+| 04  XSS (OWASP Juice Shop) | [docsify-this.net](https://docsify-this.net/?basePath=https://raw.githubusercontent.com/francescacraievich/cyber_labs/main/04_XSS&homepage=report.md) |
+| 04  XSS Extra (Client/Server-side Protection) | [docsify-this.net](https://docsify-this.net/?basePath=https://raw.githubusercontent.com/francescacraievich/cyber_labs/main/04_XSS_OJS&homepage=report.md) |
+| 05  SQL Injection (OWASP Juice Shop) | [docsify-this.net](https://docsify-this.net/?basePath=https://raw.githubusercontent.com/francescacraievich/cyber_labs/main/05_SQLI&homepage=report.md) |
+| 05  SQL Injection Extra (Ephemeral Accountant & User Credentials) | [docsify-this.net](https://docsify-this.net/?basePath=https://raw.githubusercontent.com/francescacraievich/cyber_labs/main/05_SQLI_OJS&homepage=report.md) |
+| 06  AiTM: SSLStrip with BURP Proxy | [docsify-this.net](https://docsify-this.net/?basePath=https://raw.githubusercontent.com/francescacraievich/cyber_labs/main/06_AITM_1&homepage=report.md) |
+| 06  AiTM: ARP Cache Poisoning | [docsify-this.net](https://docsify-this.net/?basePath=https://raw.githubusercontent.com/francescacraievich/cyber_labs/main/06_AITM_2&homepage=report.md) |
+| 06  AiTM: DNS Redirect via ARP Spoofing | [docsify-this.net](https://docsify-this.net/?basePath=https://raw.githubusercontent.com/francescacraievich/cyber_labs/main/06_AITM_3&homepage=report.md) |
+| 07  SAST: Static Code Analysis | [slides](07_SAST/lab07_sast.pptx) |
 
